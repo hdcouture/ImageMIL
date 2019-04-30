@@ -241,7 +241,6 @@ if __name__ == '__main__':
                 model.fit( X_train, y_train, calibrate=calibrate, param_search=True, sample_weight=sw )
             elif mi_type in ['median','max']:
                 model = SIL( n_jobs=n_jobs, **options )
-                print(y_train)
                 model.fit( X_train, y_train, calibrate=calibrate, param_search=True, sample_weight=sw )
             elif mi_type == 'quantile':
                 if quantiles is not None:

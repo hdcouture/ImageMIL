@@ -6,6 +6,8 @@ import sklearn.calibration
 import sklearn.neighbors
 import sklearn.discriminant_analysis
 from sklearn.base import BaseEstimator, ClassifierMixin
+import warnings
+from sklearn.exceptions import ConvergenceWarning
 
 def balanced_accuracy( y_true, y_pred, sample_weight=None ):
     if len(y_pred.shape) > 1:
@@ -64,10 +66,10 @@ class LinearClassifier(BaseEstimator,ClassifierMixin):
 
         # create model
         if self.classifier.lower() == 'logistic':
-            self._model = sklearn.linear_model.LogisticRegression( C=self.C, class_weight=self.class_weight, solver='sag', max_iter=2000 )
+            self._model = sklearn.linear_model.LogisticRegression( C=self.C, class_weight=self.class_weight, solver='sag' )
         elif self.classifier.lower() == 'svm':
             if self.kernel.lower() == 'linear':
-                self._model = sklearn.svm.LinearSVC( C=self.C, class_weight=self.class_weight, max_iter=10000 )
+                self._model = sklearn.svm.LinearSVC( C=self.C, class_weight=self.class_weight )
             elif self.kernel.lower() == 'poly':
                 self._model = sklearn.svm.SVC( kernel='poly', degree=self.p, C=self.C, class_weight=self.class_weight )
             elif self.kernel.lower() == 'rbf':
@@ -90,15 +92,19 @@ class LinearClassifier(BaseEstimator,ClassifierMixin):
             else:
                 self._calib = sklearn.calibration.CalibratedClassifierCV( cl, method=method, cv=5 )
             y  = y.reshape((len(y),))
-            self._calib.fit( X, y, sample_weight=sample_weight )
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore',category=ConvergenceWarning)
+                self._calib.fit( X, y, sample_weight=sample_weight )
         else:
             self._calib = None
 
         # fit model
-        if sample_weight is not None and self.classifier.lower() != 'lda':
-            self._model.fit( X, y.flatten(), sample_weight=sample_weight )
-        else:
-            self._model.fit( X, y.flatten() )
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',category=ConvergenceWarning)
+            if sample_weight is not None and self.classifier.lower() != 'lda':
+                self._model.fit( X, y.flatten(), sample_weight=sample_weight )
+            else:
+                self._model.fit( X, y.flatten() )
         
         return self
 
@@ -186,16 +192,19 @@ class LinearClassifier(BaseEstimator,ClassifierMixin):
             metric = balanced_accuracy
         cv = min(20,min(max((y==0).sum(),(y==-1).sum()),(y==1).sum()))
         if self.classifier.lower() == 'logistic':
-            clf = sklearn.model_selection.GridSearchCV( sklearn.linear_model.LogisticRegression( class_weight=self.class_weight, solver='sag', max_iter=2000 ), [{'C':Cvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
+            clf = sklearn.model_selection.GridSearchCV( sklearn.linear_model.LogisticRegression( class_weight=self.class_weight, solver='sag' ), [{'C':Cvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
         elif self.classifier.lower() == 'svm':
             if self.kernel.lower() == 'linear':
-                clf = sklearn.model_selection.GridSearchCV( sklearn.svm.LinearSVC( class_weight=self.class_weight, max_iter=10000 ), [{'C':Cvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
+                clf = sklearn.model_selection.GridSearchCV( sklearn.svm.LinearSVC( class_weight=self.class_weight ), [{'C':Cvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
             elif self.kernel == 'poly':
                 clf = sklearn.model_selection.GridSearchCV( sklearn.svm.SVC( kernel='poly', degree=self.p, class_weight=self.class_weight ), [{'C':Cvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
             elif self.kernel == 'rbf':
                 clf = sklearn.model_selection.GridSearchCV( sklearn.svm.SVC( kernel='rbf', class_weight=self.class_weight ), [{'C':Cvals,'gamma':gvals}], cv=cv, scoring=metric, n_jobs=self.n_jobs, refit=False )#, fit_params={'sample_weight':sample_weight} )
 
-        clf.fit( X, y.flatten(), sample_weight=sample_weight )
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',category=ConvergenceWarning)
+            clf.fit( X, y.flatten(), sample_weight=sample_weight )
 
         C = clf.best_params_['C']
         if self.kernel == 'rbf':
