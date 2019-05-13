@@ -77,3 +77,19 @@ python run_mi_classify.py -o CBCS_out/ -m vgg16 -l block4_pool --cat grade1vs3 -
 python run_mi_classify.py -o CBCS_out/ -m vgg16 -l block4_pool --cat BasalvsNonBasal,er,ductal_lobular,ror-high --sample-weight grade12vs3 --group grade12vs3 --cv-folds 5 --instance-size 800 --instance-stride 400 --mi quantile
 ```
 
+## Citation
+
+If you use this code, please cite:
+
+```
+@article{couture2018image,
+  title={Image analysis with deep learning to predict breast cancer grade, ER status, histologic subtype, and intrinsic subtype},
+  author={Couture, Heather D and Williams, Lindsay A and Geradts, Joseph and Nyante, Sarah J and Butler, Ebonee N and Marron, JS and Perou, Charles M and Troester, Melissa A and Niethammer, Marc},
+  journal={NPJ Breast Cancer},
+  volume={4},
+  number={1},
+  pages={30},
+  year={2018},
+  publisher={Nature Publishing Group}
+}
+```
