@@ -7,7 +7,8 @@ def load_image_list( out_dir ):
     img_files = []
     fd = open( out_dir + 'sample_images.csv' )
     for line in fd:
-        img_files.extend( [ fn.strip() for fn in line.split(',')[1:] ] )
+        files = [ fn.strip() for fn in line.split(',')[1:] if fn.strip() != '' ]
+        img_files.extend( files )
     return img_files
 
 def load_mask_list( out_dir ):
@@ -15,7 +16,7 @@ def load_mask_list( out_dir ):
     mask_files = []
     fd = open( out_dir + 'sample_masks.csv' )
     for line in fd:
-        mask_files.extend( [ fn.strip() for fn in line.split(',')[1:] ] )
+        mask_files.extend( [ fn.strip() for fn in line.split(',')[1:] if fn.strip() != '' ] )
     return mask_files
 
 def load_sample_images( out_dir ):
@@ -24,7 +25,7 @@ def load_sample_images( out_dir ):
     fd = open( out_dir + 'sample_images.csv' )
     for line in fd:
         line = line.split(',')
-        samples[line[0]] = [ fn.strip() for fn in line[1:] ]
+        samples[line[0]] = [ fn.strip() for fn in line[1:] if fn.strip() != '' ]
     return samples
     
 def load_labels( out_dir ):

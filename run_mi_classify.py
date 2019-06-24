@@ -81,6 +81,9 @@ if __name__ == '__main__':
 
     if calibrate is None:
         calibrate = False
+    else:
+        calibrate = bool(calibrate)
+        print(calibrate)
 
     if n_jobs is not None:
         n_jobs = int(n_jobs)
@@ -158,7 +161,8 @@ if __name__ == '__main__':
             if len(feat) == 0:
                 continue
             feats[sample].append( feat )
-            
+
+        print('%s %d'%(sample,len(feats[sample])))
         feats[sample] = np.concatenate(feats[sample],axis=0)
         if len(feats[sample].shape) == 1:
             feats[sample] = feats[sample].reshape((1,len(feats[sample])))
@@ -176,10 +180,14 @@ if __name__ == '__main__':
             cv_folds = int(cv_folds)
         else:
             cv_lno = int(cv_lno)
-            cv_folds = len(samples) // cv_lno
+            if cv_folds is None:
+                cv_folds = len(samples) // cv_lno
         idx = np.arange(len(samples))
         if len(label_names) == 1:
-            skf = sklearn.model_selection.StratifiedKFold( n_splits=cv_folds, shuffle=True )
+            if cv_lno == 1:
+                skf = sklearn.model_selection.LeaveOneOut()
+            else:
+                skf = sklearn.model_selection.StratifiedKFold( n_splits=cv_folds, shuffle=True )
             idx_train_test = list(skf.split(idx,labels[:,0]))
         else:
             # merge label categories to do stratified folds
@@ -251,7 +259,9 @@ if __name__ == '__main__':
             p_predict = model.predict( X_test )
             y_predict = np.argmax(p_predict,axis=1)
             acc = sklearn.metrics.accuracy_score( y_test, y_predict )
-            if len(np.unique(y_train)) == 2:
+            if len(y_test) == 1:
+                auc = 0.0
+            elif len(np.unique(y_train)) == 2:
                 auc = sklearn.metrics.roc_auc_score( y_test, p_predict[:,1] )
             else:
                 auc = 0.0
@@ -259,7 +269,9 @@ if __name__ == '__main__':
                     auc += sklearn.metrics.roc_auc_score( y_test==i, p_predict[:,i] )
                 auc /= p_predict.shape[1]
             kappa = sklearn.metrics.cohen_kappa_score( y_test, y_predict )
-            confusion = sklearn.metrics.confusion_matrix( y_test, y_predict )
+            classes = np.unique(y_train)
+            np.sort(classes)
+            confusion = sklearn.metrics.confusion_matrix( y_test, y_predict, labels=classes )
             res.add('acc',acc)
             res.add('auc',auc)
             res.add('kappa',kappa)
@@ -269,6 +281,7 @@ if __name__ == '__main__':
             res.add('confusion',confusion)
 
             print('accuracy %f auc %f' % (acc,auc))
+            print(confusion)
 
             if group is not None:
                 # within group class metrics

@@ -66,8 +66,8 @@ if __name__ == "__main__":
         from keras.applications.inception_resnet_v2 import preprocess_input
         base_model = InceptionResNetV2(input_tensor=input_tensor,weights='imagenet')
     elif model_name.lower() == 'xception':
-        from keras.applications.Xception import Xception
-        from keras.applications.Xception import preprocess_input
+        from keras.applications.xception import Xception
+        from keras.applications.xception import preprocess_input
         base_model = Xception(input_tensor=input_tensor,weights='imagenet')
     else:
         print('Error: unsupported model')

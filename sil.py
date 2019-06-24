@@ -19,7 +19,7 @@ def slices(groups):
 class SIL(LinearClassifier):
     """Single-Instance Learning applied to MI data."""
 
-    def __init__(self, classifier='svm', kernel='linear', C=None, p=3, gamma=1e0, T=None, predict_type='median', class_weight='balanced', calibrate=True, subset=None, quantiles=16, metric='acc', n_jobs=1, verbose=True):
+    def __init__(self, classifier='svm', kernel='linear', C=None, p=3, gamma=1e0, T=None, predict_type='median', class_weight='balanced', calibrate=False, subset=None, quantiles=16, metric='acc', n_jobs=1, verbose=True):
 
         self.T = T
         self.predict_type = predict_type
